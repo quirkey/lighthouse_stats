@@ -52,6 +52,18 @@ class LighthouseStats
     @users[user_id.to_i] ||= Lighthouse::User.find(user_id)    
   end
   
+  def tickets_grouped_by_chart(chart_type, options = {}, &block)
+    the_tickets = options[:find] ? @tickets.find_all(options.delete(:find)) : @tickets
+    the_tickets = options[:sort] ? the_tickets.sort(options.delete(:sort)) : the_tickets
+    grouped_by = the_tickets.group_by(&block)
+    options[:label_key] ||= :labels
+    data   =  grouped_by.values.collect {|t| t.length }
+    labels =  grouped_by.keys
+    puts data.inspect
+    puts labels.inspect
+    Gchart.send(chart_type, {:data => data, options[:label_key] => labels}.merge(options))
+  end
+  
 end
 
 Lighthouse.account = ENV['ACCOUNT']
