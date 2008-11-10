@@ -53,7 +53,7 @@ class LighthouseStats
   end
   
   def tickets_grouped_by_chart(chart_type, options = {}, &block)
-    the_tickets = options[:find] ? @tickets.find_all(options.delete(:find)) : @tickets
+    the_tickets = options[:find] ? @tickets.find_all(&options.delete(:find)) : @tickets
     the_tickets = options[:sort] ? the_tickets.sort(options.delete(:sort)) : the_tickets
     grouped_by = the_tickets.group_by(&block)
     options[:label_key] ||= :labels
@@ -68,3 +68,5 @@ end
 
 Lighthouse.account = ENV['ACCOUNT']
 Lighthouse.token   = ENV['TOKEN']
+
+# lighthouse.tickets_grouped_by_chart(:pie, :find => lambda {|t| t.closed == false }, :width => 500, :height => 250) {|t| t.state }
