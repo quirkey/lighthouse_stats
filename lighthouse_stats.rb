@@ -65,6 +65,3 @@ class LighthouseStats
   end
   
 end
-
-Lighthouse.account = ENV['ACCOUNT']
-Lighthouse.token   = ENV['TOKEN']
