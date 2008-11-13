@@ -12,15 +12,22 @@ module Lighthouse
       "#{name}"
     end
   end
+  
+  class User < Base
+    def to_s
+      "#{name}"
+    end
+  end
 end
 
 class LighthouseStats
-  attr_accessor :projects, :tickets, :users
+  attr_accessor :projects, :tickets, :users, :stats
 
   def initialize
     @projects = []
     @tickets  = []
     @users    = {}
+    @stats    = {}
   end
 
   def load
@@ -62,6 +69,58 @@ class LighthouseStats
     puts data.inspect
     puts labels.inspect
     Gchart.send(chart_type, {:data => data, options[:label_key] => labels}.merge(options))
+  end
+
+  def get_stats
+    @stats[:total_tickets] = @tickets.length
+    @stats[:open_tickets_by_type] = ticket_counts_from_hash(open_tickets_by_type)
+    @stats[:open_tickets_by_user] = ticket_counts_from_hash(open_tickets_by_user)
+    @stats[:open_tickets_by_type_by_user] = open_tickets_by_type_by_user
+    @stats[:open_tickets_by_project] = ticket_counts_from_hash(open_tickets_by_project)
+    @stats[:open_tickets_by_type_by_project] = open_tickets_by_type_by_project
+    @stats[:tickets_touched] = tickets_touched.length
+    @stats[:tickets_created] = tickets_created.length
+    @stats
+  end
+
+  def open_tickets
+    @tickets.find_all {|t| t.closed == false}
+  end
+
+  def open_tickets_by_type
+    open_tickets.group_by {|t| t.state }
+  end
+  
+  def open_tickets_by_user
+    open_tickets.group_by {|t| t.assigned_user.to_s }
+  end
+  
+  def open_tickets_by_type_by_user
+    open_tickets_by_user.collect do |user_name, tickets|
+      [user_name, ticket_counts_from_hash(tickets.group_by {|t| t.state })]
+    end
+  end
+  
+  def open_tickets_by_project
+    open_tickets.group_by {|t| t.project.to_s }
+  end
+  
+  def open_tickets_by_type_by_project
+    open_tickets_by_project.collect do |project_name, tickets|
+      [project_name, ticket_counts_from_hash(tickets.group_by {|t| t.state })]
+    end
+  end
+  
+  def ticket_counts_from_hash(hash)
+    hash.collect {|a,tickets| [a, tickets.length] }
+  end
+  
+  def tickets_touched
+    @tickets.find_all {|t| t.updated_at.to_date == Time.now.to_date }
+  end
+  
+  def tickets_created
+    @tickets.find_all {|t| t.created_at.to_date == Time.now.to_date }
   end
   
 end

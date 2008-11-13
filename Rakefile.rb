@@ -6,7 +6,10 @@ namespace :lighthouse_stats do
     Lighthouse.token   = ENV['TOKEN'] || raise('Supply an account token with TOKEN=')
     @lighthouse = LighthouseStats.new
     @lighthouse.load
+    @lighthouse.get_stats
+    puts @lighthouse.stats.inspect
   end
+  
   
   task :dump => :load_current do
     path = ENV['TO_PATH'] || File.expand_path('~/.lighthouse_stats/')
