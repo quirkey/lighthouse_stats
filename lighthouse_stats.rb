@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'lighthouse-api'
+require 'active_support'
 require 'gchart'
 
 module Lighthouse 
@@ -77,6 +78,7 @@ class LighthouseStats
     @stats[:open_tickets_by_user] = ticket_counts_from_hash(open_tickets_by_user)
     @stats[:open_tickets_by_type_by_user] = open_tickets_by_type_by_user
     @stats[:open_tickets_by_project] = ticket_counts_from_hash(open_tickets_by_project)
+    @stats[:resolved_tickets_by_project] = ticket_counts_from_hash(resolved_tickets_by_project)
     @stats[:open_tickets_by_type_by_project] = open_tickets_by_type_by_project
     @stats[:tickets_touched] = tickets_touched.length
     @stats[:tickets_created] = tickets_created.length
@@ -85,6 +87,10 @@ class LighthouseStats
 
   def open_tickets
     @tickets.find_all {|t| t.closed == false}
+  end
+
+  def resolved_tickets
+    @tickets.find_all {|t| t.closed == true}
   end
 
   def open_tickets_by_type
@@ -103,6 +109,10 @@ class LighthouseStats
   
   def open_tickets_by_project
     open_tickets.group_by {|t| t.project.to_s }
+  end
+  
+  def resolved_tickets_by_project
+    resolved_tickets.group_by {|t| t.project.to_s }
   end
   
   def open_tickets_by_type_by_project
