@@ -15,7 +15,7 @@ namespace :lighthouse_stats do
   end
   
   task :load_yesterday do
-    load_stats_for_date(2.days.ago)
+    load_past_days(3)
   end
   
   task :html do
@@ -44,9 +44,23 @@ end
 def load_stats_for_date(time)
   filename = filename_for_date(time)
   full_path = File.join(save_path, filename)
+  unless File.readable?(full_path)
+    puts "No dump for #{time}"
+    return
+  end
   puts "Loading from '#{full_path}' #{File.size(full_path) / 1024}k"
   stats = ""
   File.open(full_path, 'r') {|f| stats = Marshal.load(f.read) }
-  puts stats.get_stats.inspect
+  stats
+end
+
+def load_past_days(num_days = 7)
+  stats = []
+  num_days.times do |n|
+    time = n.days.ago
+    lh = load_stats_for_date(time)
+    stats << [time, lh.get_stats] if lh
+  end
+  puts stats.inspect
   stats
 end
