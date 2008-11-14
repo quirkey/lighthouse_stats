@@ -10,7 +10,12 @@ namespace :lighthouse_stats do
     puts @lighthouse.stats.inspect
   end
   
-  task :dump => :load_current do
+  task :dump_current => :load_current do
+    dump_stats_for_date(@lighthouse, Time.now)
+  end
+  
+  task :load_yesterday do
+    load_stats_for_date(2.days.ago)
   end
   
   task :html do
@@ -36,9 +41,12 @@ def dump_stats_for_date(stats, time)
   puts "Wrote #{File.size(full_path) / 1024}k"
 end
 
-def load_stats_for_date(date)
+def load_stats_for_date(time)
   filename = filename_for_date(time)
   full_path = File.join(save_path, filename)
   puts "Loading from '#{full_path}' #{File.size(full_path) / 1024}k"
+  stats = ""
   File.open(full_path, 'r') {|f| stats = Marshal.load(f.read) }
+  puts stats.get_stats.inspect
+  stats
 end

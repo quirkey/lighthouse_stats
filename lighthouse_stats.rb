@@ -22,13 +22,12 @@ module Lighthouse
 end
 
 class LighthouseStats
-  attr_accessor :projects, :tickets, :users, :stats
+  attr_accessor :projects, :tickets, :users
 
   def initialize
     @projects = []
     @tickets  = []
     @users    = {}
-    @stats    = {}
   end
 
   def load
@@ -73,16 +72,20 @@ class LighthouseStats
   end
 
   def get_stats
-    @stats[:total_tickets] = @tickets.length
-    @stats[:open_tickets_by_type] = ticket_counts_from_hash(open_tickets_by_type)
-    @stats[:open_tickets_by_user] = ticket_counts_from_hash(open_tickets_by_user)
-    @stats[:open_tickets_by_type_by_user] = open_tickets_by_type_by_user
-    @stats[:open_tickets_by_project] = ticket_counts_from_hash(open_tickets_by_project)
-    @stats[:resolved_tickets_by_project] = ticket_counts_from_hash(resolved_tickets_by_project)
-    @stats[:open_tickets_by_type_by_project] = open_tickets_by_type_by_project
-    @stats[:tickets_touched] = tickets_touched.length
-    @stats[:tickets_created] = tickets_created.length
-    @stats
+    stats[:total_tickets] = @tickets.length
+    stats[:open_tickets_by_type] = ticket_counts_from_hash(open_tickets_by_type)
+    stats[:open_tickets_by_user] = ticket_counts_from_hash(open_tickets_by_user)
+    stats[:open_tickets_by_type_by_user] = open_tickets_by_type_by_user
+    stats[:open_tickets_by_project] = ticket_counts_from_hash(open_tickets_by_project)
+    stats[:resolved_tickets_by_project] = ticket_counts_from_hash(resolved_tickets_by_project)
+    stats[:open_tickets_by_type_by_project] = open_tickets_by_type_by_project
+    stats[:tickets_touched] = tickets_touched.length
+    stats[:tickets_created] = tickets_created.length
+    stats
+  end
+
+  def stats
+    @stats ||= {}
   end
 
   def open_tickets
@@ -98,7 +101,7 @@ class LighthouseStats
   end
   
   def open_tickets_by_user
-    open_tickets.group_by {|t| t.assigned_user.to_s }
+    open_tickets.group_by {|t| t.assigned_user.to_s.split(" ").first }
   end
   
   def open_tickets_by_type_by_user
