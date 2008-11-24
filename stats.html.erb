@@ -13,6 +13,10 @@
 		body {
 			font-family: Helvetica, Arial, sans-serif;
 		}
+		.stats_module {
+			width: 500px;
+			float:left;
+		}
 	</style>
 </head>
 
@@ -35,8 +39,14 @@
 	<%= Gchart.pie(default_graph_options.merge({:data => open_tickets_by_project.collect {|k,v| v}, :legend => open_tickets_by_project.collect {|k,v| "#{k} (#{v})"}})) %>
 </div>
 <div class="stats_module">
+	<h3>Open Tickets by Status Today</h3>
+	<% open_tickets_by_type = todays_stats[:open_tickets_by_type].sort {|a,b| b[1] <=> a[1] } %>
+	<%= Gchart.pie(default_graph_options.merge({:data => open_tickets_by_type.collect {|k,v| v}, :legend => open_tickets_by_type.collect {|k,v| "#{k} (#{v})"}})) %>
+</div>
+
+<div class="stats_module">
 	<h3>Open/Resolved by Project Today</h3>
-	<%= Gchart.bar(default_graph_options.merge({:data => [todays_stats[:total_tickets_by_project].collect {|k,v| v}, todays_stats[:resolved_tickets_by_project].collect {|k,v| v }], :labels => todays_stats[:total_tickets_by_project].collect {|k,v| k }, :bar_colors => ['333333', '666666']})) %>
+	<%= Gchart.bar(default_graph_options.merge({:width => 700, :height => 400, :data => [todays_stats[:total_tickets_by_project].collect {|k,v| v}, todays_stats[:resolved_tickets_by_project].collect {|k,v| v }], :labels => todays_stats[:total_tickets_by_project].collect {|k,v| "#{k} (#{v})" }, :bar_colors => ['333333', '666666'], :axis_with_labels => 'x'})) %>
 </div>
 </body>
 </html>
