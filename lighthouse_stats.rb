@@ -138,7 +138,4 @@ class LighthouseStats
   
 end
 
-Lighthouse.account = ENV['ACCOUNT']
-Lighthouse.token   = ENV['TOKEN']
-
 # lighthouse.tickets_grouped_by_chart(:pie, :find => lambda {|t| t.closed == false }, :width => 500, :height => 250) {|t| t.state }
