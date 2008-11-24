@@ -1,6 +1,7 @@
 #module: lhs
 
 require 'yaml'
+require 'erb'
 require 'lighthouse_stats'
 
 class Lhs < Thor
@@ -20,16 +21,26 @@ class Lhs < Thor
     dump_stats_for_date(@lighthouse, Time.now)
   end
 
+  desc 'to_html', 'Loads the past 7 days and exports to a html file'
+  def to_html
+    @stats = load_past_days
+    html = ERB.new(File.open('stats.html.erb')).result(binding)
+    html_path = File.join(save_path, filename_for_date(Time.now,'html'))
+    File.open(html_path, 'w') {|f| f << html }
+    `open #{html_path}`
+  end
+  
+  protected
   def load_settings_from_yaml(yaml_path = '~/.lighthouse_stats/lhs.yml')
     yaml_path = File.expand_path(yaml_path)
-    settings = YAML.load(yaml_path)
+    raise "Please set up #{yaml_path} with your lighthouse info" unless File.readable?(yaml_path)
+    settings = YAML.load_file(yaml_path)
     Lighthouse.account = settings['account']
     Lighthouse.token   = settings['token']
   end
-
-  protected
-  def filename_for_date(time)
-    "#{Lighthouse.account}_dump_#{time.strftime('%Y-%m-%d')}.dump"
+  
+  def filename_for_date(time, type = 'dump')
+    "#{Lighthouse.account}_#{type}_#{time.strftime('%Y-%m-%d')}.#{type}"
   end
 
   def save_path
