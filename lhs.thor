@@ -1,7 +1,8 @@
+#module: lhs
+
 require 'yaml'
 require 'lighthouse_stats'
 
-#module: lhs
 class Lhs < Thor
 
   desc 'load_current', 'Load current stats and dump to screen'
