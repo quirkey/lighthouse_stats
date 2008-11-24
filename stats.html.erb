@@ -1,3 +1,6 @@
+<% default_graph_options = {:width => 500, :height => 200, :format => 'img_tag'} %>
+<% now = Time.now %>
+<% todays_stats = @stats[0][1] %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 
@@ -5,12 +8,35 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
-	<title>Lighthouse Stats: Generated <%= Time.now %></title>
-	
+	<title>Lighthouse Stats: Generated <%= now %></title>
+	<style type="text/css" media="screen">
+		body {
+			font-family: Helvetica, Arial, sans-serif;
+		}
+	</style>
 </head>
 
 <body>
-
-
+<h1>Lighthouse Stats: <%= now %></h1>
+<div class="stats_module">
+	<h3>Today</h3>
+	<p><label>Total Tickets:</label><%= todays_stats[:total_tickets] %></p>
+	<p><label>Tickets Created:</label><%= todays_stats[:tickets_created] %></p>
+	<p><label>Tickets Touched:</label><%= todays_stats[:tickets_touched] %></p>
+</div>
+<div class="stats_module">
+	<h3>Open Tickets by User Today</h3>
+	<% open_tickets_by_user = todays_stats[:open_tickets_by_user].sort {|a,b| b[1] <=> a[1] } %>
+	<%= Gchart.pie(default_graph_options.merge({:data => open_tickets_by_user.collect {|k,v| v }, :legend => open_tickets_by_user.collect {|k,v| "#{k} (#{v})"}})) %>
+</div>
+<div class="stats_module">
+	<h3>Open Tickets by Project Today</h3>
+	<% open_tickets_by_project = todays_stats[:open_tickets_by_project].sort {|a,b| b[1] <=> a[1] } %>
+	<%= Gchart.pie(default_graph_options.merge({:data => open_tickets_by_project.collect {|k,v| v}, :legend => open_tickets_by_project.collect {|k,v| "#{k} (#{v})"}})) %>
+</div>
+<div class="stats_module">
+	<h3>Open/Resolved by Project Today</h3>
+	<%= Gchart.bar(default_graph_options.merge({:data => [todays_stats[:total_tickets_by_project].collect {|k,v| v}, todays_stats[:resolved_tickets_by_project].collect {|k,v| v + }], :legend => todays_stats[:open_tickets_by_project].collect {|k,v| k }, :bar_colors => ['FF0000', '00FF00']})) %>
+</div>
 </body>
 </html>

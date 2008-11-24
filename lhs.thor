@@ -1,6 +1,7 @@
 #module: lhs
 
 require 'yaml'
+require 'pp'
 require 'erb'
 require 'lighthouse_stats'
 
@@ -12,7 +13,7 @@ class Lhs < Thor
     @lighthouse = LighthouseStats.new
     @lighthouse.load
     @lighthouse.get_stats
-    puts @lighthouse.stats.inspect
+    pp @lighthouse.stats
   end
 
   desc 'dump_current', 'Load current stats and marshall to file'
@@ -21,10 +22,12 @@ class Lhs < Thor
     dump_stats_for_date(@lighthouse, Time.now)
   end
 
-  desc 'to_html', 'Loads the past 7 days and exports to a html file'
-  def to_html
-    @stats = load_past_days
-    html = ERB.new(File.open('stats.html.erb')).result(binding)
+  desc 'to_html [NUM_DAYS:7]', 'Loads the past 7 days and exports to a html file'
+  def to_html(num_days = 7)
+    load_settings_from_yaml
+    dump_current unless dump_exists?(Time.now)
+    @stats = load_past_days(num_days)
+    html = ERB.new(File.read('stats.html.erb')).result(binding)
     html_path = File.join(save_path, filename_for_date(Time.now,'html'))
     File.open(html_path, 'w') {|f| f << html }
     `open #{html_path}`
@@ -57,9 +60,7 @@ class Lhs < Thor
   end
 
   def load_stats_for_date(time)
-    filename = filename_for_date(time)
-    full_path = File.join(save_path, filename)
-    unless File.readable?(full_path)
+    unless full_path = dump_exists?(time)
       puts "No dump for #{time}"
       return
     end
@@ -68,15 +69,21 @@ class Lhs < Thor
     File.open(full_path, 'r') {|f| stats = Marshal.load(f.read) }
     stats
   end
+  
+  def dump_exists?(time)
+    filename = filename_for_date(time)
+    full_path = File.join(save_path, filename)
+    File.readable?(full_path) ? full_path : false
+  end
 
   def load_past_days(num_days = 7)
     stats = []
-    num_days.times do |n|
+    (0..num_days).each do |n|
       time = n.days.ago
       lh = load_stats_for_date(time)
       stats << [time, lh.get_stats] if lh
     end
-    puts stats.inspect
+    pp stats
     stats
   end
 end

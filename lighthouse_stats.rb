@@ -21,6 +21,21 @@ module Lighthouse
   end
 end
 
+class Array
+  def to_hash
+    h = {}
+    self.each_with_index do |el, i|
+      el = el.dup
+      if el.is_a?(Array)
+        h[el.shift] = (el.length < 2) ? el.first : el
+      else
+        h[i] = el
+      end
+    end
+    h
+  end
+end
+
 class LighthouseStats
   attr_accessor :projects, :tickets, :users
 
@@ -78,6 +93,7 @@ class LighthouseStats
     stats[:open_tickets_by_type_by_user] = open_tickets_by_type_by_user
     stats[:open_tickets_by_project] = ticket_counts_from_hash(open_tickets_by_project)
     stats[:resolved_tickets_by_project] = ticket_counts_from_hash(resolved_tickets_by_project)
+    stats[:total_tickets_by_project] = ticket_counts_from_hash(total_tickets_by_project)
     stats[:open_tickets_by_type_by_project] = open_tickets_by_type_by_project
     stats[:tickets_touched] = tickets_touched.length
     stats[:tickets_created] = tickets_created.length
@@ -116,6 +132,10 @@ class LighthouseStats
   
   def resolved_tickets_by_project
     resolved_tickets.group_by {|t| t.project.to_s }
+  end
+  
+  def total_tickets_by_project
+    @tickets.group_by {|t| t.project.to_s }
   end
   
   def open_tickets_by_type_by_project
