@@ -22,15 +22,22 @@ class Lhs < Thor
     dump_stats_for_date(@lighthouse, Time.now)
   end
 
-  desc 'to_html [NUM_DAYS:7]', 'Loads the past 7 days and exports to a html file'
+  desc 'to_html [NUM_DAYS:7]', 'Loads the past NUM_DAYS days and exports to a html file'
   def to_html(num_days = 7)
     load_settings_from_yaml
-    dump_current unless dump_exists?(Time.now)
+    # dump_current unless dump_exists?(Time.now)
     @stats = load_past_days(num_days)
     html = ERB.new(File.read('stats.html.erb')).result(binding)
     html_path = File.join(save_path, filename_for_date(Time.now,'html'))
     File.open(html_path, 'w') {|f| f << html }
     `open #{html_path}`
+  end
+  
+  desc 'to_html [NUM_DAYS:7]', 'Loads the past NUM_DAYS days and dumps them to screen'
+  def print_past_days(num_days = 7)
+    load_settings_from_yaml
+    @stats = load_past_days(num_days)
+    puts @stats.inspect
   end
   
   protected
@@ -78,12 +85,25 @@ class Lhs < Thor
 
   def load_past_days(num_days = 7)
     stats = []
-    (0..num_days).each do |n|
+    (0..num_days.to_i).each do |n|
       time = n.days.ago
       lh = load_stats_for_date(time)
       stats << [time, lh.get_stats] if lh
     end
     pp stats
     stats
+  end
+  
+  def stats_over_time(stat_name)
+    collected_stats = {}
+    times           = []
+    @stats.each do |time, date_stats|
+      times << time
+      date_stats[stat_name].each do |key, num|
+        collected_stats[key] ||= []
+        collected_stats[key] << num
+      end
+    end
+    {:collected => collected_stats, :times => times}
   end
 end
